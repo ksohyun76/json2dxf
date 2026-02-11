@@ -1,0 +1,62 @@
+[
+    {
+        "type": "wall",
+        "position": {"x": 0.0, "y": 0.0},
+        "dimensions": {"width": 8.0, "height": 0.25},
+        "orientation": "horizontal"
+    },
+    {
+        "type": "wall",
+        "position": {"x": 0.0, "y": 0.0},
+        "dimensions": {"width": 0.25, "height": 6.0},
+        "orientation": "vertical"
+    },
+    {
+        "type": "wall",
+        "position": {"x": 7.75, "y": 0.0},
+        "dimensions": {"width": 0.25, "height": 6.0},
+        "orientation": "vertical"
+    },
+    {
+        "type": "wall",
+        "position": {"x": 0.0, "y": 5.75},
+        "dimensions": {"width": 8.0, "height": 0.25},
+        "orientation": "horizontal"
+    },
+    {
+        "type": "door",
+        "position": {"x": 3.5, "y": 0.25},
+        "dimensions": {"width": 1.0, "height": 0.0},
+        "orientation": "horizontal"
+    },
+    {
+        "type": "shelf",
+        "position": {"x": 0.5, "y": 0.8},
+        "dimensions": {"width": 2.0, "height": 0.4},
+        "orientation": "horizontal"
+    },
+    {
+        "type": "shelf",
+        "position": {"x": 0.5, "y": 2.0},
+        "dimensions": {"width": 2.0, "height": 0.4},
+        "orientation": "horizontal"
+    },
+    {
+        "type": "shelf",
+        "position": {"x": 0.5, "y": 3.2},
+        "dimensions": {"width": 2.0, "height": 0.4},
+        "orientation": "horizontal"
+    },
+    {
+        "type": "chiller",
+        "position": {"x": 5.0, "y": 0.8},
+        "dimensions": {"width": 2.0, "height": 1.0},
+        "orientation": "horizontal"
+    },
+    {
+        "type": "chiller",
+        "position": {"x": 5.0, "y": 2.5},
+        "dimensions": {"width": 2.0, "height": 1.0},
+        "orientation": "horizontal"
+    }
+]
