@@ -3,34 +3,6 @@ import json
 import sys
 import os
 
-# Layer color mapping using RGB True Color
-# Same colors as index.html for consistency across AutoCAD and 3D viewer
-
-# LAYER_COLORS
-AA = {
-    'wall': 0x4a90e2,      # Soft blue
-    'shelf': 0xf39c12,     # Orange
-    'door': 0xffff00,      # Yellow
-    'chiller': 0x00ffff,   # Cyan
-    'floor': 0x000000,     # Gray (auto-generated from walls)
-}
-
-# Layer height mapping (Z coordinate in millimeters)
-# LAYER_HEIGHTS
-BB = {
-    'wall': 2800,      # Wall: 2.8m (standard ceiling height)
-    'shelf': 1800,     # Shelf: 1.8m (typical shelf height)
-    'door': 2100,      # Door: 2.1m (standard door height)
-    'chiller': 2000,   # Chiller: 2.0m (refrigerator height)
-    'floor': 0,        # Floor: ground level (not used for polyline3d)
-}
-
-# Default color (for types not in mapping)
-DEFAULT_COLOR = 0xcccccc  # Light gray
-
-# Default height (for types not in mapping)
-DEFAULT_HEIGHT = 2000  # 2m
-
 # Meter to millimeter conversion scale
 SCALE = 1000
 

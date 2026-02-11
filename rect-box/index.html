@@ -162,34 +162,38 @@
         import * as THREE from 'three';
         import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
         
-        // Synchronized with LAYER_COLORS in json2dxf.py
-        // Exact same RGB colors for consistency across AutoCAD and 3D viewer
-        const LAYER_COLOR_MAP = {
-            'WALL': 0x4a90e2,      // Soft blue
-            'SHELF': 0xf39c12,     // Orange
-            'DOOR': 0xffff00,      // Yellow
-            'CHILLER': 0x00ffff,   // Cyan
-            'FLOOR': 0x808080,  
-        };
-        
-        // Layer height mapping (synchronized with json2dxf.py)
-        // Heights in millimeters
-        const LAYER_HEIGHT_MAP = {
-            'WALL': 2800,      // Wall: 2.8m (standard ceiling height)
-            'SHELF': 1800,     // Shelf: 1.8m (typical shelf height)
-            'DOOR': 2100,      // Door: 2.1m (standard door height)
-            'CHILLER': 2000,   // Chiller: 2.0m (refrigerator height)
-            'FLOOR': 0,        // Floor: ground level
-        };
-        
-        // Default height for unmapped layers
-        const DEFAULT_HEIGHT = 2000;
-        
-        // Default color palette (for unmapped layers)
+        // Load configuration from config/config.json
+        let LAYER_COLOR_MAP = {};
+        let LAYER_HEIGHT_MAP = {};
+        let DEFAULT_HEIGHT = 2000;
         const defaultColorPalette = [
             0xff6b6b, 0x4ecdc4, 0xffe66d, 0x95e1d3,
             0xf38181, 0xaa96da, 0xfcbad3, 0xa8e6cf
         ];
+        
+        async function loadConfig() {
+            try {
+                const response = await fetch('config.json');
+                const config = await response.json();
+                
+                // Parse layers configuration
+                const layers = config.layers || {};
+                
+                for (const [layerKey, layerConfig] of Object.entries(layers)) {
+                    const layerName = layerKey.toUpperCase();
+                    // Parse hex color string to integer
+                    const colorStr = layerConfig.color;
+                    const colorInt = parseInt(colorStr, 16);
+                    
+                    LAYER_COLOR_MAP[layerName] = colorInt;
+                    LAYER_HEIGHT_MAP[layerName] = layerConfig.height;
+                }
+                
+                console.log('✓ Configuration loaded:', LAYER_COLOR_MAP, LAYER_HEIGHT_MAP);
+            } catch (error) {
+                console.warn('Failed to load config.json, using defaults:', error);
+            }
+        }
         
         // Global variables
         let initialCameraPos, initialControlsTarget;
@@ -202,7 +206,7 @@
         
         // Three.js basic setup
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0xeeeeee); // 0x1a1a2e
+        scene.background = new THREE.Color(0xeeeeee);
         scene.fog = new THREE.Fog(0xeeeeee, 5000, 50000);
         
         const camera = new THREE.PerspectiveCamera(
@@ -241,6 +245,14 @@
         const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.4);
         directionalLight2.position.set(-5000, 5000, -5000);
         scene.add(directionalLight2);
+
+        // Grid helper
+        const gridHelper = new THREE.GridHelper(50000, 50, 0x444444, 0x222222);
+        scene.add(gridHelper);
+
+        // Axes helper
+        const axesHelper = new THREE.AxesHelper(3000);
+        scene.add(axesHelper);
         
         const hemisphereLight = new THREE.HemisphereLight(0x8888ff, 0x444444, 0.3);
         scene.add(hemisphereLight);
@@ -404,21 +416,20 @@
                 });
                 
                 const mesh = new THREE.Mesh(geometry, material);
-                mesh.rotation.x = -Math.PI / 2; // Rotate to lie flat
-                mesh.position.set(centerX, 0, -centerY); // z = 0 (ground level)
+                mesh.rotation.x = -Math.PI / 2;
+                mesh.position.set(centerX, 0, -centerY);
                 mesh.receiveShadow = true;
                 
                 return mesh;
             }
             
             // Regular 3D boxes for other layers
-            // Get height based on layer type
             const upperLayer = layer.toUpperCase();
             const height = LAYER_HEIGHT_MAP[upperLayer] || DEFAULT_HEIGHT;
             
             // Set minimum values for doors with zero dimensions
-            if (width < 1) width = 100;  // Min 100mm
-            if (depth < 1) depth = 100;  // Min 100mm
+            if (width < 1) width = 100;
+            if (depth < 1) depth = 100;
             
             const centerX = (minX + maxX) / 2;
             const centerY = (minY + maxY) / 2;
@@ -477,30 +488,6 @@
                     console.warn('❌ Entity rendering failed:', e, entity);
                 }
             });
-            
-            // Create floor
-            if (bounds.minX !== Infinity) {
-                const floorWidth = bounds.maxX - bounds.minX;
-                const floorDepth = bounds.maxY - bounds.minY;
-                const floorCenterX = (bounds.minX + bounds.maxX) / 2;
-                const floorCenterY = (bounds.minY + bounds.maxY) / 2;
-                
-                const floorGeometry = new THREE.PlaneGeometry(floorWidth, floorDepth);
-                const floorMaterial = new THREE.MeshStandardMaterial({
-                    color: 0x2c3e50,
-                    roughness: 0.8,
-                    metalness: 0.2,
-                    side: THREE.DoubleSide
-                });
-                
-                const floor = new THREE.Mesh(floorGeometry, floorMaterial);
-                floor.rotation.x = -Math.PI / 2;
-                floor.position.set(floorCenterX, 0, -floorCenterY);
-                floor.receiveShadow = true;
-                scene.add(floor);
-                
-                console.log(`✅ Floor created: ${floorWidth.toFixed(0)} x ${floorDepth.toFixed(0)}mm`);
-            }
         }
         
         // Setup camera
@@ -573,37 +560,36 @@
             document.getElementById('layer-list').innerHTML = layerHTML;
         }
         
-        // Load DXF file (supports URL ?file=xxx.dxf)
+        // Load config first, then load DXF
         const params = new URLSearchParams(window.location.search);
-        const dxfFile = params.get('file');
+        const dxfFile = params.get('file') || 'data.dxf';
         
         document.getElementById('current-file').textContent = dxfFile;
         
-        fetch(dxfFile)
-            .then(response => {
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                return response.text();
-            })
-            .then(dxfText => {
-                console.log('✅ DXF file loaded, size:', dxfText.length);
-                const entities = parseDXF(dxfText);
-                renderEntities(entities);
-                setupCamera();
-                updateStats();
-                document.getElementById('loading').style.display = 'none';
-                console.log('✅ Rendering complete');
-            })
-            .catch(error => {
-                console.error('❌ DXF load failed:', error);
-                document.getElementById('loading').innerHTML = `
-                    <div style="color: #ff4444;">❌ File load failed</div>
-                    <div style="font-size: 12px; margin-top: 10px;">${error.message}</div>
-                    <div style="font-size: 10px; margin-top: 10px; color: #aaa;">
-                    DXF file: ${dxfFile}<br>
-                    Make sure the file is in the same directory as the HTML.
-                    </div>
-                `;
-            });
+        loadConfig().then(() => {
+            return fetch(dxfFile);
+        }).then(response => {
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            return response.text();
+        }).then(dxfText => {
+            console.log('✅ DXF file loaded, size:', dxfText.length);
+            const entities = parseDXF(dxfText);
+            renderEntities(entities);
+            setupCamera();
+            updateStats();
+            document.getElementById('loading').style.display = 'none';
+            console.log('✅ Rendering complete');
+        }).catch(error => {
+            console.error('❌ Load failed:', error);
+            document.getElementById('loading').innerHTML = `
+                <div style="color: #ff4444;">❌ File load failed</div>
+                <div style="font-size: 12px; margin-top: 10px;">${error.message}</div>
+                <div style="font-size: 10px; margin-top: 10px; color: #aaa;">
+                DXF file: ${dxfFile}<br>
+                Make sure the file is in the same directory as the HTML.
+                </div>
+            `;
+        });
         
         // Animation loop
         function animate() {
