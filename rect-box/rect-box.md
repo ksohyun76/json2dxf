@@ -154,7 +154,7 @@ python rect-box/json2dxf.py <input_JSON_file> <output_DXF_file>
 **Examples:**
 ```bash
 # Run from project root (with virtual environment activated)
-python rect-box/json2dxf.py rect-box/test/my_room.json rect-box/test/my_room.dxf
+python rect-box/json2dxf.py rect-box/test/data_1.json rect-box/test/data_1.dxf
 ```
 
 ### Key Features
@@ -170,16 +170,26 @@ python rect-box/json2dxf.py rect-box/test/my_room.json rect-box/test/my_room.dxf
 ### Output Example
 
 ```
-Input JSON: test/data_2.json
-Output DXF: test/output.dxf
+Input JSON: rect-box/test/data_1.json
+Output DXF: rect-box/test/data_1.dxf
 --------------------------------------------------
+Floor bounds calculated from walls: (0, 0) to (12000, 8000)
 Layer created: WALL (RGB: #4A90E2)
-Layer created: SHELF (RGB: #F39C12)
+Layer created: FLOOR (RGB: #808080)
 Layer created: DOOR (RGB: #FFFF00)
+Layer created: SHELF (RGB: #F39C12)
 Layer created: CHILLER (RGB: #00FFFF)
+Floor entity created on FLOOR layer (2D LWPOLYLINE at z=0)
 
-✓ DXF file created: test/output.dxf
-✓ Total entities: 14
+Height mapping used:
+  DOOR: z=2100mm
+  SHELF: z=1800mm
+  CHILLER: z=2000mm
+  WALL: z=2800mm
+  
+✓ DXF file created: rect-box/test/data_1.dxf
+✓ Total entities: 18
+✓ Floor layer added automatically
 ```
 
 ## 🌐 index.html Details

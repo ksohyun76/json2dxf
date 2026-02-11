@@ -73,7 +73,7 @@ def create_dxf_from_json(input_json_path, output_dxf_path):
     for item_type in used_types:
         layer_name = item_type.upper()
         #rgb_color = LAYER_COLORS.get(item_type, DEFAULT_COLOR)
-        layer_info = config['layers'].get(item_type, config['defaults'])
+        layer_info = config['layers'].get(layer_name, config['defaults'])
         rgb_color = int(layer_info['color'],16) # type : hex
         
         # Create layer
@@ -106,7 +106,7 @@ def create_dxf_from_json(input_json_path, output_dxf_path):
     # Iterate through JSON data and create drawing entities
     for item in data:
         item_type = item['type'].upper()
-        item_type_lower = item['type'].lower()
+        #item_type_lower = item['type'].lower()
         x = item['position']['x'] * SCALE
         y = item['position']['y'] * SCALE
         width = item['dimensions']['width'] * SCALE
@@ -133,7 +133,8 @@ def create_dxf_from_json(input_json_path, output_dxf_path):
     for layer_type in used_types:
         if layer_type != 'floor':
             #z = LAYER_HEIGHTS.get(layer_type, DEFAULT_HEIGHT)
-            h_info = config['layers'].get(item_type, config['defaults'])
+            layer_name = layer_type.upper()
+            h_info = config['layers'].get(layer_name, config['defaults'])
             z = h_info['height']
             print(f"  {layer_type.upper()}: z={z}mm")
     
