@@ -55,8 +55,20 @@ def create_dxf_from_json(input_json_path, output_dxf_path):
         # Find the bounding box of all walls
         min_x = min(item['position']['x'] * SCALE for item in wall_objects)
         min_y = min(item['position']['y'] * SCALE for item in wall_objects)
-        max_x = max((item['position']['x'] + item['dimensions']['width']) * SCALE for item in wall_objects)
-        max_y = max((item['position']['y'] + item['dimensions']['height']) * SCALE for item in wall_objects)
+        
+        
+        def _wh(item):
+            w = item['dimensions']['width']
+            h = item['dimensions']['height']
+            if str(item.get('orientation','')).lower() == 'vertical':
+                w, h = h, w
+            return w, h
+        
+        max_x = max((item['position']['x'] + _wh(item)[0]) * SCALE for item in wall_objects)
+        max_y = max((item['position']['y'] + _wh(item)[1]) * SCALE for item in wall_objects)
+        
+        #max_x = max((item['position']['x'] + item['dimensions']['width']) * SCALE for item in wall_objects)
+        #max_y = max((item['position']['y'] + item['dimensions']['height']) * SCALE for item in wall_objects)
         
         floor_bounds = {
             'min_x': min_x,
@@ -111,6 +123,12 @@ def create_dxf_from_json(input_json_path, output_dxf_path):
         y = item['position']['y'] * SCALE
         width = item['dimensions']['width'] * SCALE
         height = item['dimensions']['height'] * SCALE
+        
+        # Apply orientation (vertical/horizontal) to geometry
+        # If orientation is 'vertical', swap width/height to reflect 90° rotation in DXF
+        orientation = str(item.get('orientation', '')).lower()
+        if orientation == 'vertical':
+            width, height = height, width
         
         # Get Z coordinate (height) for this layer type
         #z_coord = LAYER_HEIGHTS.get(item_type_lower, DEFAULT_HEIGHT)

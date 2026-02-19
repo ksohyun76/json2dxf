@@ -8,13 +8,13 @@
     {
         "type": "wall",
         "position": {"x": 0.0, "y": 0.0},
-        "dimensions": {"width": 0.3, "height": 8.0},
+        "dimensions": {"width": 8.0, "height": 0.3},
         "orientation": "vertical"
     },
     {
         "type": "wall",
         "position": {"x": 11.7, "y": 0.0},
-        "dimensions": {"width": 0.3, "height": 8.0},
+        "dimensions": {"width": 8.0, "height": 0.3},
         "orientation": "vertical"
     },
     {
